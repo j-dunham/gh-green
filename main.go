@@ -12,6 +12,19 @@ import (
 	"github.com/cli/go-gh/v2/pkg/api"
 )
 
+var (
+	border = lipgloss.Border{
+		Top:         "._.:*:",
+		Bottom:      "._.:*:",
+		Left:        "|*",
+		Right:       "|*",
+		TopLeft:     "*",
+		TopRight:    "*",
+		BottomLeft:  "*",
+		BottomRight: "*",
+	}
+)
+
 type DateTime struct{ time.Time }
 
 type errMsg error
@@ -78,29 +91,17 @@ func (m model) View() string {
 	if m.loading {
 		return fmt.Sprintf("\n\n %s Checking for Contributions!\n\n", m.spinner.View())
 	}
+	style := lipgloss.NewStyle().
+		Padding(1, 2).
+		Border(border)
 
 	var msg string
 	if m.green {
-		border := lipgloss.Border{
-			Top:         "._.:*:",
-			Bottom:      "._.:*:",
-			Left:        "|*",
-			Right:       "|*",
-			TopLeft:     "*",
-			TopRight:    "*",
-			BottomLeft:  "*",
-			BottomRight: "*",
-		}
-
-		style := lipgloss.NewStyle().
-			Padding(1, 2).
-			Border(border).
-			BorderForeground(lipgloss.Color("#04B575"))
-
 		msg = "You are green for today!"
-		msg = style.Render(msg)
+		msg = style.BorderForeground(lipgloss.Color("#04B575")).Render(msg)
 	} else {
-		msg = "You haven't made any commits today... yet!"
+		msg = "You haven't made any contributions... yet!"
+		msg = style.BorderForeground(lipgloss.Color("#E55353")).Render(msg)
 	}
 	return fmt.Sprintf("%s\n", msg)
 }
