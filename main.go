@@ -62,7 +62,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case Contribution:
 		m.loading = false
 		m.green = msg.isGreen
-		return m, nil
+		return m, tea.Quit
 	default:
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
@@ -81,11 +81,28 @@ func (m model) View() string {
 
 	var msg string
 	if m.green {
-		msg = "🍰 You are green!"
+		border := lipgloss.Border{
+			Top:         "._.:*:",
+			Bottom:      "._.:*:",
+			Left:        "|*",
+			Right:       "|*",
+			TopLeft:     "*",
+			TopRight:    "*",
+			BottomLeft:  "*",
+			BottomRight: "*",
+		}
+
+		style := lipgloss.NewStyle().
+			Padding(1, 2).
+			Border(border).
+			BorderForeground(lipgloss.Color("#04B575"))
+
+		msg = "🟩 You are green for today!"
+		msg = style.Render(msg)
 	} else {
 		msg = "You haven't made any commits today... yet!"
 	}
-	return fmt.Sprintf("\n\n %s\n\n press q to quit", msg)
+	return fmt.Sprintf("%s\n", msg)
 }
 
 func ExampleContributionGraphQL() Contribution {
