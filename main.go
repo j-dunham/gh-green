@@ -40,7 +40,7 @@ func initialModel() model {
 
 func (m model) Init() tea.Cmd {
 	return tea.Batch(
-		spinner.Tick,
+		m.spinner.Tick,
 		tea.Cmd(func() tea.Msg {
 			return ExampleContributionGraphQL()
 		}),
@@ -97,7 +97,7 @@ func (m model) View() string {
 			Border(border).
 			BorderForeground(lipgloss.Color("#04B575"))
 
-		msg = "🟩 You are green for today!"
+		msg = "You are green for today!"
 		msg = style.Render(msg)
 	} else {
 		msg = "You haven't made any commits today... yet!"
