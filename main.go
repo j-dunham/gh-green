@@ -115,7 +115,6 @@ func ExampleContributionGraphQL() Contribution {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Add attributes to get the contributions for commits, issues, and pull requests, and maybe more
 	var Query struct {
 		Viewer struct {
 			ContributionsCollection struct {
