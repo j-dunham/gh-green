@@ -136,7 +136,7 @@ func getContributions() Contribution {
 			} `graphql:"contributionsCollection(from: $from)"`
 		} `graphql:"viewer"`
 	}
-	t := time.Now().Add(-50 * 24 * time.Hour)
+	t := time.Now()
 	err = client.Query("contributionQuery", &Query, map[string]interface{}{"from": DateTime{t}})
 	if err != nil {
 		log.Fatal(err)
