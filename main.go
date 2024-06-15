@@ -31,13 +31,18 @@ type errMsg error
 
 type Contribution struct {
 	isGreen bool
+	Commits int
+	Issues  int
+	PRs     int
+	Reviews int
+	Repos   int
 }
 
 type model struct {
-	spinner spinner.Model
-	loading bool
-	err     error
-	green   bool
+	spinner      spinner.Model
+	loading      bool
+	err          error
+	contribution Contribution
 }
 
 func initialModel() model {
@@ -45,9 +50,9 @@ func initialModel() model {
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575"))
 	return model{
-		spinner: s,
-		loading: true,
-		green:   false,
+		spinner:      s,
+		loading:      true,
+		contribution: Contribution{},
 	}
 }
 
@@ -55,7 +60,7 @@ func (m model) Init() tea.Cmd {
 	return tea.Batch(
 		m.spinner.Tick,
 		tea.Cmd(func() tea.Msg {
-			return ExampleContributionGraphQL()
+			return getContributions()
 		}),
 	)
 }
@@ -74,7 +79,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case Contribution:
 		m.loading = false
-		m.green = msg.isGreen
+		m.contribution = msg
 		return m, tea.Quit
 	default:
 		var cmd tea.Cmd
@@ -96,8 +101,12 @@ func (m model) View() string {
 		Border(border)
 
 	var msg string
-	if m.green {
+	if m.contribution.isGreen {
 		msg = "You are green for today!"
+		msg += fmt.Sprintf(
+			"\n\ntotals:\n- %d commits\n- %d issues\n- %d PRs\n- %d PR reviews\n- %d repositories",
+			m.contribution.Commits, m.contribution.Issues, m.contribution.PRs, m.contribution.Reviews, m.contribution.Repos,
+		)
 		msg = style.BorderForeground(lipgloss.Color("#04B575")).Render(msg)
 	} else {
 		msg = "You haven't made any contributions... yet!"
@@ -106,7 +115,7 @@ func (m model) View() string {
 	return fmt.Sprintf("%s\n", msg)
 }
 
-func ExampleContributionGraphQL() Contribution {
+func getContributions() Contribution {
 	opts := api.ClientOptions{
 		EnableCache: true,
 		Timeout:     5 * time.Second,
@@ -118,19 +127,31 @@ func ExampleContributionGraphQL() Contribution {
 	var Query struct {
 		Viewer struct {
 			ContributionsCollection struct {
-				TotalCommitContributions int
-				HasAnyContributions      bool
+				TotalCommitContributions            int
+				TotalIssueContributions             int
+				TotalPullRequestContributions       int
+				TotalPullRequestReviewContributions int
+				TotalRepositoryContributions        int
+				HasAnyContributions                 bool
 			} `graphql:"contributionsCollection(from: $from)"`
 		} `graphql:"viewer"`
 	}
-
-	err = client.Query("contributionQuery", &Query, map[string]interface{}{"from": DateTime{time.Now()}})
+	t := time.Now().Add(-50 * 24 * time.Hour)
+	err = client.Query("contributionQuery", &Query, map[string]interface{}{"from": DateTime{t}})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	isGreen := Query.Viewer.ContributionsCollection.HasAnyContributions
-	return Contribution{isGreen: isGreen}
+	c := Contribution{
+		isGreen: Query.Viewer.ContributionsCollection.HasAnyContributions,
+		Commits: Query.Viewer.ContributionsCollection.TotalCommitContributions,
+		Issues:  Query.Viewer.ContributionsCollection.TotalIssueContributions,
+		PRs:     Query.Viewer.ContributionsCollection.TotalPullRequestContributions,
+		Reviews: Query.Viewer.ContributionsCollection.TotalPullRequestReviewContributions,
+		Repos:   Query.Viewer.ContributionsCollection.TotalRepositoryContributions,
+	}
+
+	return c
 }
 
 func main() {
