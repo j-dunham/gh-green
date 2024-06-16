@@ -9,3 +9,14 @@ The `gh` entension that checks if you are "green" .i.e. have a green square in y
 
 ## Try it out!
 Run `gh green`
+
+
+Example for no commits
+```
+*._.:*:._.:*:._.:*:._.:*:._.:*:._.:*:._.:*:._.:*
+|                                              |
+*  You haven't made any contributions... yet!  *
+|                                              |
+*._.:*:._.:*:._.:*:._.:*:._.:*:._.:*:._.:*:._.:*
+```
+
