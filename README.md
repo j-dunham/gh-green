@@ -11,7 +11,8 @@ The `gh` entension that checks if you are "green" .i.e. have a green square in y
 Run `gh green`
 
 
-Example for no commits
+## Example outputs
+for no contributions
 ```
 *._.:*:._.:*:._.:*:._.:*:._.:*:._.:*:._.:*:._.:*
 |                                              |
@@ -20,3 +21,18 @@ Example for no commits
 *._.:*:._.:*:._.:*:._.:*:._.:*:._.:*:._.:*:._.:*
 ```
 
+with contributions
+```
+*._.:*:._.:*:._.:*:._.:*:._.:*
+|                            |
+*  You are green for today!  *
+|                            |
+*  totals:                   *
+|  - 3 commits               |
+*  - 1 issues                *
+|  - 0 PRs                   |
+*  - 2 PR reviews            *
+|  - 0 repositories          |
+*                            *
+*._.:*:._.:*:._.:*:._.:*:._.:*
+```
