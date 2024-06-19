@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -60,7 +59,11 @@ func (m model) Init() tea.Cmd {
 	return tea.Batch(
 		m.spinner.Tick,
 		tea.Cmd(func() tea.Msg {
-			return getContributions()
+			c, err := getContributions()
+			if err != nil {
+				return err 
+			}
+			return c
 		}),
 	)
 }
@@ -115,14 +118,14 @@ func (m model) View() string {
 	return fmt.Sprintf("%s\n", msg)
 }
 
-func getContributions() Contribution {
+func getContributions() (Contribution, errMsg) {
 	opts := api.ClientOptions{
 		EnableCache: true,
 		Timeout:     5 * time.Second,
 	}
 	client, err := api.NewGraphQLClient(opts)
 	if err != nil {
-		log.Fatal(err)
+		return Contribution{}, errMsg(err)
 	}
 	var Query struct {
 		Viewer struct {
@@ -139,7 +142,7 @@ func getContributions() Contribution {
 	t := time.Now()
 	err = client.Query("contributionQuery", &Query, map[string]interface{}{"from": DateTime{t}})
 	if err != nil {
-		log.Fatal(err)
+		return Contribution{}, errMsg(err)
 	}
 
 	c := Contribution{
@@ -151,7 +154,7 @@ func getContributions() Contribution {
 		Repos:   Query.Viewer.ContributionsCollection.TotalRepositoryContributions,
 	}
 
-	return c
+	return c, nil
 }
 
 func main() {
