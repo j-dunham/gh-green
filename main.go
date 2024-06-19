@@ -61,7 +61,7 @@ func (m model) Init() tea.Cmd {
 		tea.Cmd(func() tea.Msg {
 			c, err := getContributions()
 			if err != nil {
-				return err 
+				return err
 			}
 			return c
 		}),
@@ -79,7 +79,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case errMsg:
 		m.err = msg
-		return m, nil
+		return m, tea.Quit
 	case Contribution:
 		m.loading = false
 		m.contribution = msg
@@ -94,7 +94,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	if m.err != nil {
-		return m.err.Error()
+		return fmt.Sprintf("\nError: %s\n", m.err)
 	}
 	if m.loading {
 		return fmt.Sprintf("\n\n %s Checking for Contributions!\n\n", m.spinner.View())
