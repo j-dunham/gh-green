@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"time"
@@ -159,11 +160,14 @@ func getContributions(t time.Time) (Contribution, errMsg) {
 }
 
 func main() {
+	dateFlag := flag.String("date", "", "(optional) Date to check contributions for, format: yyyy-mm-dd")
+	flag.Parse()
+
 	var t time.Time
 	var err error
 
-	if len(os.Args) > 1 {
-		t, err = time.Parse("2006-01-02", os.Args[1])
+	if *dateFlag != "" {
+		t, err = time.Parse("2006-01-02", *dateFlag)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
