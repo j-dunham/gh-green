@@ -38,20 +38,22 @@ type Contribution struct {
 }
 
 type model struct {
-	spinner      spinner.Model
-	loading      bool
-	err          error
-	contribution Contribution
+	spinner          spinner.Model
+	loading          bool
+	err              error
+	contribution     Contribution
+	contributionTime time.Time
 }
 
-func initialModel() model {
+func initialModel(t time.Time) model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575"))
 	return model{
-		spinner:      s,
-		loading:      true,
-		contribution: Contribution{},
+		contributionTime: t,
+		spinner:          s,
+		loading:          true,
+		contribution:     Contribution{},
 	}
 }
 
@@ -59,7 +61,7 @@ func (m model) Init() tea.Cmd {
 	return tea.Batch(
 		m.spinner.Tick,
 		tea.Cmd(func() tea.Msg {
-			c, err := getContributions()
+			c, err := getContributions(m.contributionTime)
 			if err != nil {
 				return err
 			}
@@ -118,7 +120,7 @@ func (m model) View() string {
 	return fmt.Sprintf("%s\n", msg)
 }
 
-func getContributions() (Contribution, errMsg) {
+func getContributions(t time.Time) (Contribution, errMsg) {
 	opts := api.ClientOptions{
 		EnableCache: true,
 		Timeout:     5 * time.Second,
@@ -139,7 +141,6 @@ func getContributions() (Contribution, errMsg) {
 			} `graphql:"contributionsCollection(from: $from, to: $to)"`
 		} `graphql:"viewer"`
 	}
-	t := time.Now()
 	err = client.Query("contributionQuery", &Query, map[string]interface{}{"from": DateTime{t}, "to": DateTime{t}})
 	if err != nil {
 		return Contribution{}, errMsg(err)
@@ -158,7 +159,19 @@ func getContributions() (Contribution, errMsg) {
 }
 
 func main() {
-	p := tea.NewProgram(initialModel())
+	var t time.Time
+	var err error
+
+	if len(os.Args) > 1 {
+		t, err = time.Parse("2006-01-02", os.Args[1])
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	} else {
+		t = time.Now()
+	}
+	p := tea.NewProgram(initialModel(t))
 	if _, err := p.Run(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
