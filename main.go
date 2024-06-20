@@ -136,11 +136,11 @@ func getContributions() (Contribution, errMsg) {
 				TotalPullRequestReviewContributions int
 				TotalRepositoryContributions        int
 				HasAnyContributions                 bool
-			} `graphql:"contributionsCollection(from: $from)"`
+			} `graphql:"contributionsCollection(from: $from, to: $to)"`
 		} `graphql:"viewer"`
 	}
 	t := time.Now()
-	err = client.Query("contributionQuery", &Query, map[string]interface{}{"from": DateTime{t}})
+	err = client.Query("contributionQuery", &Query, map[string]interface{}{"from": DateTime{t}, "to": DateTime{t}})
 	if err != nil {
 		return Contribution{}, errMsg(err)
 	}
